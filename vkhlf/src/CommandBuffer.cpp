@@ -650,6 +650,114 @@ namespace vkhlf
     return !!(m_flags & vk::CommandBufferUsageFlagBits::eSimultaneousUse);
   }
 #endif
+  static vk::PipelineStageFlags determinePipelineStageFlags(vk::AccessFlags flags)
+  {
+    //if (!flags)
+    //{
+    //  return vk::PipelineStageFlags{};
+    //}
+
+    vk::PipelineStageFlags stageFlags;
+
+    if (vk::AccessFlagBits::eIndirectCommandRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eDrawIndirect;
+    }
+    else if(vk::AccessFlagBits::eIndexRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eVertexInput;
+    }
+    else if(vk::AccessFlagBits::eVertexAttributeRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eVertexInput;
+    }
+    else if(vk::AccessFlagBits::eUniformRead & flags)
+    {
+      //VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+      //VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT
+      //VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT
+      //VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT
+      //VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+      //VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+
+      stageFlags = vk::PipelineStageFlagBits::eVertexShader
+                 | vk::PipelineStageFlagBits::eFragmentShader;
+    }
+    else if(vk::AccessFlagBits::eInputAttachmentRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eFragmentShader;
+    }
+    else if(vk::AccessFlagBits::eShaderRead & flags)
+    {
+      //VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+      //VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT
+      //VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT
+      //VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT
+      //VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+      //VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+
+      stageFlags = vk::PipelineStageFlagBits::eVertexShader
+                 | vk::PipelineStageFlagBits::eFragmentShader;
+    }
+    else if(vk::AccessFlagBits::eShaderWrite & flags)
+    {
+      //VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+      //VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT
+      //VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT
+      //VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT
+      //VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+      //VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+
+      stageFlags = vk::PipelineStageFlagBits::eVertexShader
+                 | vk::PipelineStageFlagBits::eFragmentShader;
+    }
+    else if(vk::AccessFlagBits::eColorAttachmentRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    }
+    else if(vk::AccessFlagBits::eColorAttachmentWrite & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    }
+    else if(vk::AccessFlagBits::eDepthStencilAttachmentRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eEarlyFragmentTests
+                 | vk::PipelineStageFlagBits::eLateFragmentTests;
+    }
+    else if(vk::AccessFlagBits::eDepthStencilAttachmentWrite & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eEarlyFragmentTests
+                 | vk::PipelineStageFlagBits::eLateFragmentTests;
+    }
+    else if(vk::AccessFlagBits::eTransferRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eTransfer;
+    }
+    else if(vk::AccessFlagBits::eTransferWrite & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eTransfer;
+    }
+    else if(vk::AccessFlagBits::eHostRead & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eHost;
+    }
+    else if(vk::AccessFlagBits::eHostWrite & flags)
+    {
+      stageFlags = vk::PipelineStageFlagBits::eHost;
+    }
+    // N/A for these.
+    //else if(vk::AccessFlagBits::eMemoryRead & flags) {}
+    //else if(vk::AccessFlagBits::eMemoryWrite & flags) {}
+    //else if(vk::AccessFlagBits::eCommandProcessReadNVX & flags)
+    //else if(vk::AccessFlagBits::eCommandProcessWriteNVX & flags) {}
+    //else if(vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT & flags) {}
+    else
+    {
+      stageFlags = vk::PipelineStageFlagBits::eTopOfPipe;
+    }
+
+    return stageFlags;
+  }
 
   static vk::AccessFlags determineAccessFlags(vk::ImageLayout layout)
   {
@@ -692,10 +800,13 @@ namespace vkhlf
     vk::AccessFlags srcAccessMask = determineAccessFlags(oldImageLayout);
     vk::AccessFlags dstAccessMask = determineAccessFlags(newImageLayout);
 
+    vk::PipelineStageFlags srcPipelineStageFlags = determinePipelineStageFlags(srcAccessMask);
+    vk::PipelineStageFlags  dstPipelineStageFlags = determinePipelineStageFlags(dstAccessMask);
+
     vkhlf::ImageMemoryBarrier imageMemoryBarrier(srcAccessMask, dstAccessMask, oldImageLayout, newImageLayout, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, image, subresourceRange);
 
     assert(commandBuffer->isRecording());
-    commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTopOfPipe, {}, nullptr, nullptr, imageMemoryBarrier);
+    commandBuffer->pipelineBarrier(srcPipelineStageFlags, dstPipelineStageFlags, {}, nullptr, nullptr, imageMemoryBarrier);
   }
 
 } // namespace vkhlf
