@@ -45,11 +45,27 @@ namespace vkhlf
   {}
 
   std::shared_ptr<DeviceMemory> DeviceMemoryAllocator::allocate(vk::DeviceSize allocationSize, uint32_t memoryTypeIndex)
-  {
-    if (m_chunkSize < allocationSize)
+  {/*
+    auto actualAllocationSize = allocationSize;*/
+
+    auto nonCoherentAtomSize = get<Device>()->get<PhysicalDevice>()->getProperties().limits.nonCoherentAtomSize;
+    auto remainder = allocationSize % nonCoherentAtomSize;
+    auto actualAllocationSize = (0 == remainder) ? allocationSize : (nonCoherentAtomSize - remainder) + allocationSize;
+
+    if (0 != (actualAllocationSize % nonCoherentAtomSize))
     {
-      std::shared_ptr<DeviceMemoryChunk> chunk = std::make_shared<DeviceMemoryChunk>(get<Device>(), allocationSize, memoryTypeIndex, get<Allocator>());
-      return std::make_shared<DeviceMemory>(chunk, 0, allocationSize);
+      __debugbreak();
+    }
+
+    //if (398464 == actualAllocationSize)
+    //{
+    //  __debugbreak();
+    //}
+
+    if (m_chunkSize < actualAllocationSize)
+    {
+      std::shared_ptr<DeviceMemoryChunk> chunk = std::make_shared<DeviceMemoryChunk>(get<Device>(), actualAllocationSize, memoryTypeIndex, get<Allocator>());
+      return std::make_shared<DeviceMemory>(chunk, 0, actualAllocationSize);
     }
 
     auto chunkIt = m_chunks.find(memoryTypeIndex);
@@ -57,14 +73,14 @@ namespace vkhlf
     {
       chunkIt = m_chunks.insert(std::make_pair(memoryTypeIndex, ChunkData(std::make_shared<DeviceMemoryChunk>(get<Device>(), m_chunkSize, memoryTypeIndex, get<Allocator>()), 0))).first;
     }
-    if ( m_chunkSize < chunkIt->second.offset + allocationSize)
+    if ( m_chunkSize < chunkIt->second.offset + actualAllocationSize)
     {
       chunkIt->second.chunk = std::make_shared<DeviceMemoryChunk>(get<Device>(), m_chunkSize, memoryTypeIndex, get<Allocator>());
       chunkIt->second.offset = 0;
     }
-    chunkIt->second.offset += allocationSize;
+    chunkIt->second.offset += actualAllocationSize;
 
-    return std::make_shared<DeviceMemory>(chunkIt->second.chunk, chunkIt->second.offset - allocationSize, allocationSize);
+    return std::make_shared<DeviceMemory>(chunkIt->second.chunk, chunkIt->second.offset - actualAllocationSize, actualAllocationSize);
   }
 
 } // namespace vkh

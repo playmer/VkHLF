@@ -59,7 +59,6 @@ namespace vkhlf
 
       std::map<uint32_t, ChunkData> m_chunks;       // map from memoryTypeIndex to current chunk
       vk::DeviceSize                m_chunkSize;
-      std::shared_ptr<Device>       m_device;
   };
 
 } // namespace vkh

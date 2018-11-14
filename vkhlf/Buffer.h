@@ -77,17 +77,22 @@ namespace vkhlf
   inline void Buffer::update(vk::DeviceSize offset, vk::ArrayProxy<const T> data, std::shared_ptr<CommandBuffer> const& commandBuffer)
   {
     size_t size = data.size() * sizeof(T);
-    if (((offset & 0x3) == 0) && (size < 64 * 1024) && ((size & 0x3) == 0))
+
+    auto nonCoherentAtomSize = get<Device>()->get<PhysicalDevice>()->getProperties().limits.nonCoherentAtomSize;
+    auto remainder = size % nonCoherentAtomSize;
+    auto actualMapSize = (0 == remainder) ? size : (nonCoherentAtomSize - remainder) + size;
+
+    if (((offset & 0x3) == 0) && (actualMapSize < 64 * 1024) && ((actualMapSize & 0x3) == 0))
     {
       commandBuffer->updateBuffer(shared_from_this(), offset, data);
     }
     else if (getMemoryPropertyFlags() & vk::MemoryPropertyFlagBits::eHostVisible)
     {
-      void * pData = get<DeviceMemory>()->map(offset, size);
-      memcpy(pData, data.data(), size);
+      void * pData = get<DeviceMemory>()->map(offset, actualMapSize);
+      memcpy(pData, data.data(), actualMapSize);
       if (!(getMemoryPropertyFlags() & vk::MemoryPropertyFlagBits::eHostCoherent))
       {
-        get<DeviceMemory>()->flush(offset, size);
+        get<DeviceMemory>()->flush(offset, actualMapSize);
       }
       get<DeviceMemory>()->unmap();
     }
@@ -95,11 +100,11 @@ namespace vkhlf
     {
       std::shared_ptr<Buffer> mappingBuffer = get<Device>()->createBuffer(m_size, vk::BufferUsageFlagBits::eTransferSrc, vk::SharingMode::eExclusive, nullptr, vk::MemoryPropertyFlagBits::eHostVisible,
                                                                           nullptr, get<Allocator>());
-      void * pData = mappingBuffer->get<DeviceMemory>()->map(offset, size);
-      memcpy(pData, data.data(), size);
-      mappingBuffer->get<DeviceMemory>()->flush(offset, size);
+      void * pData = mappingBuffer->get<DeviceMemory>()->map(offset, actualMapSize);
+      memcpy(pData, data.data(), actualMapSize);
+      mappingBuffer->get<DeviceMemory>()->flush(offset, actualMapSize);
       mappingBuffer->get<DeviceMemory>()->unmap();
-      commandBuffer->copyBuffer(mappingBuffer, shared_from_this(), vk::BufferCopy(0, 0, size));
+      commandBuffer->copyBuffer(mappingBuffer, shared_from_this(), vk::BufferCopy(0, 0, actualMapSize));
     }
 
 #if !defined(NDEBUG)

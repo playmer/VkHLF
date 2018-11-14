@@ -194,7 +194,7 @@ namespace vkhlf
   {
     if (m_image->getMemoryPropertyFlags() & vk::MemoryPropertyFlagBits::eHostVisible)
     {
-      m_pData = m_image->get<DeviceMemory>()->map(m_offset, m_size);
+      m_pData = m_image->get<DeviceMemory>()->map(m_mappingImage->get<DeviceMemory>()->getOffset(), m_mappingImage->get<DeviceMemory>()->getSize());
     }
     else
     {
@@ -202,7 +202,7 @@ namespace vkhlf
                                                            vk::ImageTiling::eLinear, vk::ImageUsageFlagBits::eTransferSrc, m_image->getSharingMode(), m_image->getQueueFamilyIndices(),
                                                            vk::ImageLayout::ePreinitialized, vk::MemoryPropertyFlagBits::eHostVisible, nullptr, m_image->get<Allocator>());
       setImageLayout(m_commandBuffer, m_mappingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePreinitialized, vk::ImageLayout::eGeneral);
-      m_pData = m_mappingImage->get<DeviceMemory>()->map(m_offset, m_size);
+      m_pData = m_mappingImage->get<DeviceMemory>()->map(m_mappingImage->get<DeviceMemory>()->getOffset(), m_mappingImage->get<DeviceMemory>()->getSize());
     }
   }
 
@@ -212,13 +212,13 @@ namespace vkhlf
     {
       if (!(m_image->getMemoryPropertyFlags() & vk::MemoryPropertyFlagBits::eHostCoherent))
       {
-        m_image->get<DeviceMemory>()->flush(m_offset, m_size);
+        m_image->get<DeviceMemory>()->flush(m_image->get<DeviceMemory>()->getOffset(), m_image->get<DeviceMemory>()->getSize());
       }
       m_image->get<DeviceMemory>()->unmap();
     }
     else
     {
-      m_mappingImage->get<DeviceMemory>()->flush(m_offset, m_size);
+      m_mappingImage->get<DeviceMemory>()->flush(m_mappingImage->get<DeviceMemory>()->getOffset(), m_mappingImage->get<DeviceMemory>()->getSize());
       m_mappingImage->get<DeviceMemory>()->unmap();
 
       setImageLayout(m_commandBuffer, m_mappingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferSrcOptimal);
