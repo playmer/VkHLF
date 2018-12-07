@@ -51,7 +51,7 @@ namespace vkhlf
 
   void DeviceMemoryChunk::flush(vk::DeviceSize offset, vk::DeviceSize size) const
   {
-    assert(offset + size <= m_size);
+    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
     assert(m_mapped);
 
     static_cast<vk::Device>(*get<Device>()).flushMappedMemoryRanges(vk::MappedMemoryRange(m_deviceMemory, offset, size));
@@ -64,7 +64,7 @@ namespace vkhlf
 
   void DeviceMemoryChunk::invalidate(vk::DeviceSize offset, vk::DeviceSize size) const
   {
-    assert(offset + size <= m_size);
+    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
     assert(m_mapped);
 
     static_cast<vk::Device>(*get<Device>()).invalidateMappedMemoryRanges(vk::MappedMemoryRange(m_deviceMemory, offset, size));
@@ -72,7 +72,7 @@ namespace vkhlf
 
   void * DeviceMemoryChunk::map(vk::DeviceSize offset, vk::DeviceSize size)
   {
-    assert(offset + size <= m_size);
+    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
     assert(!m_mapped);
 
     void * pData = static_cast<vk::Device>(*get<Device>()).mapMemory(m_deviceMemory, offset, size);

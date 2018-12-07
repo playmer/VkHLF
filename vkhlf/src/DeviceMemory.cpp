@@ -65,7 +65,7 @@ namespace vkhlf
 
   void DeviceMemory::flush(vk::DeviceSize offset, vk::DeviceSize size) const
   {
-    assert( offset + size <= m_size );
+    assert( (offset + size <= m_size) || (VK_WHOLE_SIZE == size) );
     get<DeviceMemoryChunk>()->flush(m_offset + offset, size);
   }
 
@@ -76,13 +76,13 @@ namespace vkhlf
 
   void DeviceMemory::invalidate(vk::DeviceSize offset, vk::DeviceSize size) const
   {
-    assert( offset + size <= m_size );
+    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
     get<DeviceMemoryChunk>()->invalidate(m_offset + offset, size);
   }
 
   void * DeviceMemory::map(vk::DeviceSize offset, vk::DeviceSize size)
   {
-    assert(offset + size <= m_size);
+    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
     return get<DeviceMemoryChunk>()->map(m_offset + offset, size);
   }
 
