@@ -133,16 +133,16 @@ add_library( VkHLF SHARED
   ${PRIVATE}
 )
 
-If (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.7.2 OR
-    ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} EQUAL 3.7.2)
-  Find_Package(Vulkan)
+message(version: ${CMAKE_VERSION})
+if(${CMAKE_VERSION} VERSION_LESS "3.7.2")
+  set(VulkanIncludeDir "$ENV{VK_SDK_PATH}/include")
+  set(VulkanLib "$ENV{VK_SDK_PATH}/Lib/vulkan-1.lib")
+else()
+  find_package(Vulkan)
 
-  Set(VulkanIncludeDir ${Vulkan_INCLUDE_DIRS})
-  Set(VulkanLib Vulkan::Vulkan)
-Else()
-  Set(VulkanIncludeDir "$ENV{VK_SDK_PATH}/include")
-  Set(VulkanLib "$ENV{VK_SDK_PATH}/Lib/vulkan-1.lib")
-EndIf()
+  set(VulkanIncludeDir ${Vulkan_INCLUDE_DIRS})
+  set(VulkanLib Vulkan::Vulkan)
+endif()
 
 target_include_directories(VkHLF
   PUBLIC    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/private>
