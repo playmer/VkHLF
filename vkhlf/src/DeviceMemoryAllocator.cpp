@@ -45,22 +45,10 @@ namespace vkhlf
   {}
 
   std::shared_ptr<DeviceMemory> DeviceMemoryAllocator::allocate(vk::DeviceSize allocationSize, uint32_t memoryTypeIndex)
-  {/*
-    auto actualAllocationSize = allocationSize;*/
-
+  {
     auto nonCoherentAtomSize = get<Device>()->get<PhysicalDevice>()->getProperties().limits.nonCoherentAtomSize;
     auto remainder = allocationSize % nonCoherentAtomSize;
     auto actualAllocationSize = (0 == remainder) ? allocationSize : (nonCoherentAtomSize - remainder) + allocationSize;
-
-    if (0 != (actualAllocationSize % nonCoherentAtomSize))
-    {
-      __debugbreak();
-    }
-
-    //if (398464 == actualAllocationSize)
-    //{
-    //  __debugbreak();
-    //}
 
     if (m_chunkSize < actualAllocationSize)
     {
