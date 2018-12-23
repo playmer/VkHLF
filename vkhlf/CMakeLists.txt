@@ -153,6 +153,12 @@ target_include_directories(VkHLF
   INTERFACE  "${PROJECT_SOURCE_DIR}"
 )
 
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+  target_compile_options(VkHLF PRIVATE -std:c++14)
+else()
+  target_compile_options(VkHLF PRIVATE -std=c++14)
+endif()
+
 target_link_libraries(VkHLF
   ${OPENGL_gl_LIBRARY}
   ${VulkanLib}
