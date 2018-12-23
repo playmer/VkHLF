@@ -32,6 +32,7 @@
 #include <vkhlf/CommandBuffer.h>
 #include <vkhlf/Device.h>
 #include <vkhlf/DeviceMemory.h>
+#include <vkhlf/PhysicalDevice.h>
 
 namespace vkhlf
 {
