@@ -70,7 +70,7 @@ namespace vkhlf
     vk::MemoryRequirements memReqs = getMemoryRequirements();
     uint32_t memoryTypeIndex = determineMemoryTypeIndex(get<Device>()->get<PhysicalDevice>()->getMemoryProperties(), memReqs.memoryTypeBits, m_memoryPropertyFlags);
     assert(memoryTypeIndex != ~0);
-    set<DeviceMemory>(get<Device>()->allocateMemory(memReqs.size, memoryTypeIndex, deviceMemoryAllocator ? deviceMemoryAllocator : std::make_shared<DeviceMemoryAllocator>(get<Device>(), 0, nullptr)));
+    set<DeviceMemory>(get<Device>()->allocateMemory(memReqs, memoryTypeIndex, deviceMemoryAllocator ? deviceMemoryAllocator : std::make_shared<DeviceMemoryAllocator>(get<Device>(), 0, nullptr)));
     static_cast<vk::Device>(*get<Device>()).bindImageMemory(m_image, static_cast<vk::DeviceMemory>(*get<DeviceMemory>()->get<DeviceMemoryChunk>()), get<DeviceMemory>()->getOffset());
   }
 

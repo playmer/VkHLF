@@ -44,11 +44,30 @@ namespace vkhlf
   DeviceMemoryAllocator::~DeviceMemoryAllocator()
   {}
 
-  std::shared_ptr<DeviceMemory> DeviceMemoryAllocator::allocate(vk::DeviceSize allocationSize, uint32_t memoryTypeIndex)
+  static vk::DeviceSize GreatestCommonDenominator(vk::DeviceSize a, vk::DeviceSize b)
   {
-    auto nonCoherentAtomSize = get<Device>()->get<PhysicalDevice>()->getProperties().limits.nonCoherentAtomSize;
-    auto remainder = allocationSize % nonCoherentAtomSize;
-    auto actualAllocationSize = (0 == remainder) ? allocationSize : (nonCoherentAtomSize - remainder) + allocationSize;
+    if (0 == b)
+    {
+      return a;
+    }
+
+    return GreatestCommonDenominator(b, a % b);
+  }
+
+  static vk::DeviceSize LeastCommonDenominator(vk::DeviceSize a, vk::DeviceSize b)
+  {
+    return (a * b) / GreatestCommonDenominator(a, b);
+  }
+
+  std::shared_ptr<DeviceMemory> DeviceMemoryAllocator::allocate(vk::MemoryRequirements allocationReqs, uint32_t memoryTypeIndex)
+  {
+    auto const allocationSize = allocationReqs.size;
+
+    auto const nonCoherentAtomSize = get<Device>()->get<PhysicalDevice>()->getProperties().limits.nonCoherentAtomSize;
+    auto const commonMultiple = LeastCommonDenominator(nonCoherentAtomSize, allocationReqs.alignment);
+
+    auto const remainder = allocationSize % commonMultiple;
+    auto const actualAllocationSize = (0 == remainder) ? allocationSize : (commonMultiple - remainder) + allocationSize;
 
     if (m_chunkSize < actualAllocationSize)
     {

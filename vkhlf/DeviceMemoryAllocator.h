@@ -40,7 +40,7 @@ namespace vkhlf
       VKHLF_API DeviceMemoryAllocator(std::shared_ptr<Device> const& device, vk::DeviceSize chunkSize, std::shared_ptr<Allocator> const& hostAllocator);
       VKHLF_API virtual ~DeviceMemoryAllocator();
 
-      VKHLF_API std::shared_ptr<DeviceMemory> allocate(vk::DeviceSize allocationSize, uint32_t memoryTypeIndex);
+      VKHLF_API std::shared_ptr<DeviceMemory> allocate(vk::MemoryRequirements allocationSize, uint32_t memoryTypeIndex);
 
       DeviceMemoryAllocator(DeviceMemoryAllocator const& rhs) = delete;
       DeviceMemoryAllocator & operator=(DeviceMemoryAllocator const& rhs) = delete;

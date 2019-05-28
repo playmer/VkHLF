@@ -64,7 +64,7 @@ namespace vkhlf
       VKHLF_API virtual ~Device();
 
       // allocate DeviceMemory
-      VKHLF_API std::shared_ptr<DeviceMemory> allocateMemory(vk::DeviceSize allocationSize, uint32_t memoryTypeIndex, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator);
+      VKHLF_API std::shared_ptr<DeviceMemory> allocateMemory(vk::MemoryRequirements allocationReqs, uint32_t memoryTypeIndex, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator);
 
       // create buffer
       VKHLF_API std::shared_ptr<Buffer> createBuffer(vk::BufferCreateFlags createFlags, vk::DeviceSize size, vk::BufferUsageFlags usageFlags = vk::BufferUsageFlagBits::eTransferDst,
