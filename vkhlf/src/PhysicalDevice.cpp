@@ -67,14 +67,6 @@ namespace vkhlf
     // - queueFamilyIndex is less than pQueueFamilyPropertyCount returned by vkGetPhysicalDeviceQueueFamilyProperties
     // - queueCount is less than or equal to the value of the queueCount member of the VkQueueFamilyProperties structure, as returned by vkGetPhysicalDeviceQueueFamilyProperties in the pQueueFamilyProperties[queueFamilyIndex]
 
-#if !defined(NDEBUG)
-    if (std::find(enabledLayerNames.begin(), enabledLayerNames.end(), "VK_LAYER_LUNARG_standard_validation") == enabledLayerNames.end())
-    {
-      std::vector<std::string> eln(enabledLayerNames.begin(), enabledLayerNames.end());
-      eln.push_back("VK_LAYER_LUNARG_standard_validation");
-      return Device::create(shared_from_this(), queueCreateInfos, eln, enabledExtensionNames, enabledFeatures, allocator);
-    }
-#endif
     return Device::create(shared_from_this(), queueCreateInfos, enabledLayerNames, enabledExtensionNames, enabledFeatures, allocator);
   }
 
