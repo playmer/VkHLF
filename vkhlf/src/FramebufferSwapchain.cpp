@@ -65,7 +65,12 @@ namespace vkhlf {
         uint32_t desiredNumberOfSwapChainImages = (surfaceCapabilities.maxImageCount == 0) ? surfaceCapabilities.minImageCount + 1 : std::min(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.maxImageCount);
 
         std::vector<vk::SurfaceFormatKHR> surfaceFormats = device->get<PhysicalDevice>()->getSurfaceFormats(surface);
-        auto itSurfaceFormats = std::find(surfaceFormats.begin(), surfaceFormats.end(), vk::SurfaceFormatKHR{ surfaceFormat, vk::ColorSpaceKHR::eSrgbNonlinear });
+
+        vk::SurfaceFormatKHR toSearchFor;
+        toSearchFor.format = surfaceFormat;
+        toSearchFor.colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
+
+        auto itSurfaceFormats = std::find(surfaceFormats.begin(), surfaceFormats.end(), toSearchFor);
         if (itSurfaceFormats == surfaceFormats.end())
         {
             throw std::runtime_error("surface does not support surfaceFormat");
