@@ -153,8 +153,6 @@ target_include_directories(VkHLF
   INTERFACE  "${PROJECT_SOURCE_DIR}"
 )
 
-target_compile_definitions(VkHLF PUBLIC VULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL=0)
-
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   target_compile_options(VkHLF PRIVATE -std:c++14)
 else()
