@@ -80,14 +80,24 @@ namespace vkhlf
     {
       chunkIt = m_chunks.insert(std::make_pair(memoryTypeIndex, ChunkData(std::make_shared<DeviceMemoryChunk>(get<Device>(), m_chunkSize, memoryTypeIndex, get<Allocator>()), 0))).first;
     }
-    if ( m_chunkSize < chunkIt->second.offset + actualAllocationSize)
+    if (m_chunkSize < (chunkIt->second.offset + actualAllocationSize))
     {
       chunkIt->second.chunk = std::make_shared<DeviceMemoryChunk>(get<Device>(), m_chunkSize, memoryTypeIndex, get<Allocator>());
       chunkIt->second.offset = 0;
     }
+
+    auto const offsetIntoChunk = chunkIt->second.offset;
     chunkIt->second.offset += actualAllocationSize;
 
-    return std::make_shared<DeviceMemory>(chunkIt->second.chunk, chunkIt->second.offset - actualAllocationSize, actualAllocationSize);
+    
+    #if !defined(NDEBUG)
+      auto const sizeForAllocation = chunkIt->second.chunk->m_size - offsetIntoChunk;
+      if (!(allocationSize <= sizeForAllocation)) __debugbreak();
+    //  if (chunkIt->second.offset > chunkIt->second.chunk->m_size) __debugbreak();
+    //  if (chunkIt->second.offset > 0x100000) __debugbreak();
+    #endif
+
+    return std::make_shared<DeviceMemory>(chunkIt->second.chunk, offsetIntoChunk, actualAllocationSize);
   }
 
 } // namespace vkh

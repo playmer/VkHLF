@@ -131,6 +131,10 @@ namespace vkhlf
       VKHLF_API std::shared_ptr<vkhlf::RenderPass> getRenderPass() const { return m_renderPass; }
       VKHLF_API std::shared_ptr<vkhlf::Framebuffer> getFramebuffer() const { return m_framebuffer; }
 
+      //VKHLF_API void beginDebugUtilsLabelEXT(const VkDebugUtilsLabelEXT* pLabelInfo);
+      //VKHLF_API void endDebugUtilsLabelEXT();
+      //VKHLF_API void insertDebugUtilsLabelEXT(const VkDebugUtilsLabelEXT* pLabelInfo);
+
 #if !defined(NDEBUG)
       VKHLF_API std::shared_ptr<vkhlf::Pipeline> const& getBoundPipeline() const;
       VKHLF_API std::map<uint32_t, std::shared_ptr<vkhlf::Buffer>> const& getBoundVertexBuffers() const;
@@ -184,7 +188,7 @@ namespace vkhlf
       vk::CommandBufferLevel                              m_level;
       vk::Bool32                                          m_occlusionQueryEnable;
       std::weak_ptr<vkhlf::CommandBuffer>                 m_primaryCommandBuffer;       // this belongs into a SecondayCommandBuffer only
-      QueryInfo                                           m_queryInfo[VK_QUERY_TYPE_RANGE_SIZE];
+      std::map<vk::QueryType, QueryInfo>                  m_queryInfo;
       vk::PipelineStageFlags                              m_stageFlags;
 #endif
   };

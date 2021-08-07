@@ -44,4 +44,17 @@ namespace vkhlf
     static_cast<vk::Instance>(*get<Instance>()).destroyDebugReportCallbackEXT(m_debugReportCallback, *get<Allocator>());
   }
 
+  DebugUtilsMessenger::DebugUtilsMessenger(std::shared_ptr<Instance> const& instance, 
+                                           const vk::DebugUtilsMessengerCreateInfoEXT& createInfo,
+                                           std::shared_ptr<Allocator> const& allocator)
+    : Reference<Instance,Allocator>(instance, allocator)
+  {
+    m_debugUtilsMessenger = static_cast<vk::Instance>(*get<Instance>()).createDebugUtilsMessengerEXT(createInfo, *get<Allocator>());
+  }
+
+  DebugUtilsMessenger::~DebugUtilsMessenger( )
+  {
+    static_cast<vk::Instance>(*get<Instance>()).destroyDebugUtilsMessengerEXT(m_debugUtilsMessenger, *get<Allocator>());
+  }
+
 } // namespace vk

@@ -52,6 +52,9 @@ namespace vkhlf
 
       VKHLF_API std::shared_ptr<DebugReportCallback> createDebugReportCallback(vk::DebugReportFlagsEXT flags, PFN_vkDebugReportCallbackEXT callback, void * pUserData = nullptr,
                                                                             std::shared_ptr<Allocator> const& allocator = nullptr);
+
+      VKHLF_API std::shared_ptr<DebugUtilsMessenger> createDebugUtilsMessenger(const vk::DebugUtilsMessengerCreateInfoEXT& createInfo, std::shared_ptr<Allocator> const& allocator = nullptr);
+      VKHLF_API void submitDebugUtilsMessage(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData);
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
              std::shared_ptr<Surface>             createSurface(ANativeWindow * window, std::shared_ptr<Allocator> const& allocator = nullptr);
 #endif

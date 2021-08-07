@@ -57,6 +57,7 @@ namespace vkhlf
   class CommandBuffer;
   class CommandPool;
   class DebugReportCallback;
+  class DebugUtilsMessenger;
   class DescriptorPool;
   class DescriptorSet;
   class DescriptorSetLayout;

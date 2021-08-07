@@ -42,7 +42,7 @@ namespace vkhlf
                        std::shared_ptr<Swapchain> const& oldSwapchain, std::shared_ptr<Allocator> const& allocator)
     : Reference(device, allocator)
   {
-    static_assert(VK_COLOR_SPACE_RANGE_SIZE_KHR == 1, "add argument 'colorSpace' when this assertion fires");
+    // TODO: Add argument colorSpace if VK_COLOR_SPACE ever has non-extension members.
     vk::SwapchainCreateInfoKHR createInfo({}, static_cast<vk::SurfaceKHR>(*surface), minImageCount, imageFormat, vk::ColorSpaceKHR::eSrgbNonlinear, imageExtent, imageArrayLayers, imageUsage,
                                           imageSharingMode, vkhlf::checked_cast<uint32_t>(queueFamilyIndices.size()), queueFamilyIndices.data(), preTransform, compositeAlpha, presentMode, clipped,
                                           oldSwapchain ? static_cast<vk::SwapchainKHR>(*oldSwapchain) : nullptr);

@@ -54,8 +54,10 @@ namespace vkhlf
     private:
       vk::DeviceMemory  m_deviceMemory;
 #if !defined(NDEBUG)
+    public:
       bool              m_mapped;
       vk::DeviceSize    m_size;
+    private:
 #endif
   };
 

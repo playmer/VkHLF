@@ -56,4 +56,22 @@ namespace vkhlf
     return m_debugReportCallback;
   }
 
+  
+  class DebugUtilsMessenger : public Reference<Instance,Allocator>
+  {
+    public:
+      VKHLF_API DebugUtilsMessenger(std::shared_ptr<Instance> const& instance, 
+                                 const vk::DebugUtilsMessengerCreateInfoEXT& createInfo,
+                                 std::shared_ptr<Allocator> const& allocator);
+      VKHLF_API virtual ~DebugUtilsMessenger();
+
+      VKHLF_API operator vk::DebugReportCallbackEXT() const;
+
+      DebugUtilsMessenger(DebugUtilsMessenger const& rhs) = delete;
+      DebugUtilsMessenger & operator=(DebugUtilsMessenger const& rhs) = delete;
+
+    private:
+      vk::DebugUtilsMessengerEXT  m_debugUtilsMessenger;
+  };
+
 } // namespace vk

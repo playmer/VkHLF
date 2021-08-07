@@ -82,9 +82,21 @@ namespace vkhlf
 #if !defined(NDEBUG)
     assert(get<CommandPool>());
 
-    for ( size_t i=0 ; i<=VK_QUERY_TYPE_RANGE_SIZE ; i++ )
+    vk::QueryType types[] = {
+        vk::QueryType::eOcclusion,
+        vk::QueryType::ePipelineStatistics,
+        vk::QueryType::eTimestamp,
+        vk::QueryType::eTransformFeedbackStreamEXT,
+        vk::QueryType::ePerformanceQueryKHR,
+        vk::QueryType::eAccelerationStructureCompactedSizeKHR,
+        vk::QueryType::eAccelerationStructureSerializationSizeKHR,
+        vk::QueryType::ePerformanceQueryINTEL,
+        vk::QueryType::eAccelerationStructureCompactedSizeNV
+    };
+
+    for (auto type : types)
     {
-      m_queryInfo[i].active = false;
+      m_queryInfo[type].active = false;
     }
 #endif
 
@@ -181,11 +193,11 @@ namespace vkhlf
   void CommandBuffer::beginQuery(std::shared_ptr<vkhlf::QueryPool> const& queryPool, uint32_t slot, vk::QueryControlFlags flags)
   {
 #if !defined(NDEBUG)
-    int queryInfoIndex = int(queryPool->getQueryType())-VK_QUERY_TYPE_BEGIN_RANGE;
-    assert(!m_queryInfo[queryInfoIndex].active);
-    m_queryInfo[queryInfoIndex].active = true;
-    m_queryInfo[queryInfoIndex].contained = true;
-    m_queryInfo[queryInfoIndex].flags = flags;
+    auto& queryInfo = m_queryInfo[queryPool->getQueryType()];
+    assert(!queryInfo.active);
+    queryInfo.active = true;
+    queryInfo.contained = true;
+    queryInfo.flags = flags;
 #endif
     m_commandBuffer.beginQuery(*queryPool, slot, flags);
   }
@@ -386,8 +398,8 @@ namespace vkhlf
   void CommandBuffer::endQuery(std::shared_ptr<vkhlf::QueryPool> const& queryPool, uint32_t slot)
   {
 #if !defined(NDEBUG)
-    assert(m_queryInfo[int(queryPool->getQueryType())-VK_QUERY_TYPE_BEGIN_RANGE].active);
-    m_queryInfo[int(queryPool->getQueryType())-VK_QUERY_TYPE_BEGIN_RANGE].active = false;
+    assert(m_queryInfo[queryPool->getQueryType()].active);
+    m_queryInfo[queryPool->getQueryType()].active = false;
 #endif
     m_commandBuffer.endQuery(*queryPool, slot);
   }
@@ -426,12 +438,12 @@ namespace vkhlf
       assert(!it->getPrimaryCommandBuffer());
       assert(!it->isRecording());
       assert(!m_inRenderPass || (it->m_flags & vk::CommandBufferUsageFlagBits::eRenderPassContinue));
-      assert(!m_queryInfo[VK_QUERY_TYPE_OCCLUSION].active || (it->m_occlusionQueryEnable && (it->m_queryInfo[VK_QUERY_TYPE_OCCLUSION].flags == m_queryInfo[VK_QUERY_TYPE_OCCLUSION].flags)));
-      assert(!m_queryInfo[VK_QUERY_TYPE_PIPELINE_STATISTICS].active || (it->m_queryInfo[VK_QUERY_TYPE_PIPELINE_STATISTICS].flags == m_queryInfo[VK_QUERY_TYPE_PIPELINE_STATISTICS].flags));
+      assert(!m_queryInfo[vk::QueryType::eOcclusion].active || (it->m_occlusionQueryEnable && (it->m_queryInfo[vk::QueryType::eOcclusion].flags == m_queryInfo[vk::QueryType::eOcclusion].flags)));
+      assert(!m_queryInfo[vk::QueryType::ePipelineStatistics].active || (it->m_queryInfo[vk::QueryType::ePipelineStatistics].flags == m_queryInfo[vk::QueryType::ePipelineStatistics].flags));
 #if !defined(NDEBUG)
-      for (size_t i = 0; i<VK_QUERY_TYPE_RANGE_SIZE; i++)
+      for (auto& [type, queryInfo] : m_queryInfo)
       {
-        assert(!m_queryInfo[i].active || !it->m_queryInfo[i].contained);
+        assert(!queryInfo.active || !it->m_queryInfo[type].contained);
       }
 #endif
 
@@ -639,6 +651,21 @@ namespace vkhlf
   {
     return m_resourceTracker;
   }
+
+//void CommandBuffer::beginDebugUtilsLabel(const VkDebugUtilsLabelEXT* pLabelInfo)
+//{
+//  pfnVkCmdBeginDebugUtilsLabelEXT(m_commandBuffer, pLabelInfo);
+//}
+//
+//void CommandBuffer::endDebugUtilsLabel()
+//{
+//  pfnVkCmdEndDebugUtilsLabelEXT(m_commandBuffer);
+//}
+//
+//void CommandBuffer::insertDebugUtilsLabel(const VkDebugUtilsLabelEXT* pLabelInfo)
+//{
+//  pfnVkCmdInsertDebugUtilsLabelEXT(m_commandBuffer, pLabelInfo);
+//}
 
 #if !defined(NDEBUG)
   void CommandBuffer::setPrimaryCommandBuffer(std::shared_ptr<vkhlf::CommandBuffer> const& primaryCommandBuffer)

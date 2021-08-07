@@ -39,6 +39,75 @@
 
 #include <iostream>
 
+//PFN_vkSetDebugUtilsObjectNameEXT pfnVkSetDebugUtilsObjectNameEXT;
+//PFN_vkSetDebugUtilsObjectTagEXT pfnVkSetDebugUtilsObjectTagEXT;
+//PFN_vkQueueBeginDebugUtilsLabelEXT pfnVkQueueBeginDebugUtilsLabelEXT;
+//PFN_vkQueueEndDebugUtilsLabelEXT pfnVkQueueEndDebugUtilsLabelEXT;
+//PFN_vkQueueInsertDebugUtilsLabelEXT pfnVkQueueInsertDebugUtilsLabelEXT;
+//PFN_vkCmdBeginDebugUtilsLabelEXT pfnVkCmdBeginDebugUtilsLabelEXT;
+//PFN_vkCmdEndDebugUtilsLabelEXT pfnVkCmdEndDebugUtilsLabelEXT;
+//PFN_vkCmdInsertDebugUtilsLabelEXT pfnVkCmdInsertDebugUtilsLabelEXT;
+PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
+PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
+PFN_vkSubmitDebugUtilsMessageEXT pfnVkSubmitDebugUtilsMessageEXT;
+
+
+//VkResult vkSetDebugUtilsObjectNameEXT(VkDevice device, const VkDebugUtilsObjectNameInfoEXT* pNameInfo)
+//{
+//  return pfnVkSetDebugUtilsObjectNameEXT(device, pNameInfo);
+//}
+//
+//VkResult vkSetDebugUtilsObjectTagEXT(VkDevice device, const VkDebugUtilsObjectTagInfoEXT* pTagInfo)
+//{
+//  return pfnVkSetDebugUtilsObjectTagEXT(device, pTagInfo);
+//}
+//
+//void vkQueueBeginDebugUtilsLabelEXT(VkQueue queue, const VkDebugUtilsLabelEXT* pLabelInfo)
+//{
+//  return pfnVkQueueBeginDebugUtilsLabelEXT(queue, pLabelInfo);
+//}
+//
+//void vkQueueEndDebugUtilsLabelEXT(VkQueue queue)
+//{
+//  pfnVkQueueEndDebugUtilsLabelEXT(queue);
+//}
+//
+//void vkQueueInsertDebugUtilsLabelEXT(VkQueue queue, const VkDebugUtilsLabelEXT* pLabelInfo)
+//{
+//  pfnVkQueueInsertDebugUtilsLabelEXT(queue, pLabelInfo);
+//}
+//
+//void vkCmdBeginDebugUtilsLabelEXT(VkCommandBuffer commandBuffer, const VkDebugUtilsLabelEXT* pLabelInfo)
+//{
+//  pfnVkCmdBeginDebugUtilsLabelEXT(commandBuffer, pLabelInfo);
+//}
+//
+//void vkCmdEndDebugUtilsLabelEXT(VkCommandBuffer commandBuffer)
+//{
+//  pfnVkCmdEndDebugUtilsLabelEXT(commandBuffer);
+//}
+//
+//void vkCmdInsertDebugUtilsLabelEXT(VkCommandBuffer commandBuffer, const VkDebugUtilsLabelEXT* pLabelInfo)
+//{
+//  pfnVkCmdInsertDebugUtilsLabelEXT(commandBuffer, pLabelInfo);
+//}
+//
+VkResult vkCreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pMessenger)
+{
+  return pfnVkCreateDebugUtilsMessengerEXT(instance, pCreateInfo, pAllocator, pMessenger);
+}
+
+void vkDestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT messenger, const VkAllocationCallbacks* pAllocator)
+{
+  pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
+}
+
+void vkSubmitDebugUtilsMessageEXT(VkInstance instance, VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData)
+{
+  pfnVkSubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, pCallbackData);
+}
+
+
 PFN_vkCreateDebugReportCallbackEXT  pfnVkCreateDebugReportCallbackEXT;
 PFN_vkDestroyDebugReportCallbackEXT pfnVkDestroyDebugReportCallbackEXT;
 
@@ -112,6 +181,18 @@ namespace vkhlf
       assert(std::find_if(extensionProperties.begin(), extensionProperties.end(), [](vk::ExtensionProperties const& lp) { return strcmp(lp.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0; }) != extensionProperties.end());
       extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
+    
+    if (std::find(enabledExtensions.begin(), enabledExtensions.end(), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == enabledExtensions.end())
+    {
+      assert(std::find_if(extensionProperties.begin(), extensionProperties.end(), [](vk::ExtensionProperties const& lp) { return strcmp(lp.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0; }) != extensionProperties.end());
+      extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+    
+    //if (std::find(enabledExtensions.begin(), enabledExtensions.end(), VK_EXT_DEBUG_MARKER_EXTENSION_NAME) == enabledExtensions.end())
+    //{
+    //  assert(std::find_if(extensionProperties.begin(), extensionProperties.end(), [](vk::ExtensionProperties const& lp) { return strcmp(lp.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0; }) != extensionProperties.end());
+    //  extensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+    //}
 # endif
 #endif
 
@@ -132,6 +213,18 @@ namespace vkhlf
     {
       pfnVkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(m_instance.getProcAddr("vkCreateDebugReportCallbackEXT"));
       pfnVkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(m_instance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
+      
+      //pfnVkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(m_instance.getProcAddr("vkSetDebugUtilsObjectNameEXT"));
+      //pfnVkSetDebugUtilsObjectTagEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectTagEXT>(m_instance.getProcAddr("vkSetDebugUtilsObjectTagEXT"));
+      //pfnVkQueueBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkQueueBeginDebugUtilsLabelEXT>(m_instance.getProcAddr("vkQueueBeginDebugUtilsLabelEXT"));
+      //pfnVkQueueEndDebugUtilsLabelEXT = reinterpret_cast<PFN_vkQueueEndDebugUtilsLabelEXT>(m_instance.getProcAddr("vkQueueEndDebugUtilsLabelEXT"));
+      //pfnVkQueueInsertDebugUtilsLabelEXT = reinterpret_cast<PFN_vkQueueInsertDebugUtilsLabelEXT>(m_instance.getProcAddr("vkQueueInsertDebugUtilsLabelEXT"));
+      //pfnVkCmdBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(m_instance.getProcAddr("vkCmdBeginDebugUtilsLabelEXT"));
+      //pfnVkCmdEndDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(m_instance.getProcAddr("vkCmdEndDebugUtilsLabelEXT"));
+      //pfnVkCmdInsertDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdInsertDebugUtilsLabelEXT>(m_instance.getProcAddr("vkCmdInsertDebugUtilsLabelEXT"));
+      pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT"));
+      pfnVkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+      pfnVkSubmitDebugUtilsMessageEXT = reinterpret_cast<PFN_vkSubmitDebugUtilsMessageEXT>(m_instance.getProcAddr("vkSubmitDebugUtilsMessageEXT"));
       initialized = true;
     }
   }
@@ -147,6 +240,16 @@ namespace vkhlf
   {
     return std::make_shared<DebugReportCallback>(shared_from_this(), flags, callback, pUserData, allocator);
   }
+  
+  std::shared_ptr<DebugUtilsMessenger> Instance::createDebugUtilsMessenger(const vk::DebugUtilsMessengerCreateInfoEXT& createInfo, std::shared_ptr<Allocator> const& allocator)
+  {
+    return std::make_shared<DebugUtilsMessenger>(shared_from_this(), createInfo, allocator);
+  }
+  //
+  //void Instance::submitDebugUtilsMessage(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData)
+  //{
+  //  pfnVkSubmitDebugUtilsMessageEXT(m_instance, messageSeverity, messageTypes, pCallbackData);
+  //}
 
   size_t Instance::getPhysicalDeviceCount() const
   {
