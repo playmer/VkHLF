@@ -261,7 +261,7 @@ namespace vkhlf
         bufferBindBinds.back().back().reserve(b.binds.size());
         for (auto const& bb : b.binds)
         {
-          bufferBindBinds.back().back().push_back(vk::SparseMemoryBind(bb.resourceOffset, bb.size, bb.memory ? static_cast<vk::DeviceMemory>(*bb.memory->get<DeviceMemoryChunk>()) : nullptr,
+          bufferBindBinds.back().back().push_back(vk::SparseMemoryBind(bb.resourceOffset, bb.size, bb.memory ? static_cast<vk::DeviceMemory>(*bb.memory) : nullptr,
                                                                        bb.memoryOffset + (bb.memory ? bb.memory->getOffset() : 0), bb.flags));
         }
         bufferBinds.back().push_back(vk::SparseBufferMemoryBindInfo(b.buffer ? static_cast<vk::Buffer>(*b.buffer) : nullptr, vkhlf::checked_cast<uint32_t>(bufferBindBinds.back().back().size()),
@@ -278,7 +278,7 @@ namespace vkhlf
         imageOpaqueBindBinds.back().back().reserve(b.binds.size());
         for (auto const& bb : b.binds)
         {
-          imageOpaqueBindBinds.back().back().push_back(vk::SparseMemoryBind(bb.resourceOffset, bb.size, bb.memory ? static_cast<vk::DeviceMemory>(*bb.memory->get<DeviceMemoryChunk>()) : nullptr,
+          imageOpaqueBindBinds.back().back().push_back(vk::SparseMemoryBind(bb.resourceOffset, bb.size, bb.memory ? static_cast<vk::DeviceMemory>(*bb.memory) : nullptr,
                                                                             bb.memoryOffset + (bb.memory ? bb.memory->getOffset() : 0), bb.flags));
         }
         imageOpaqueBinds.back().push_back(vk::SparseImageOpaqueMemoryBindInfo(b.image ? static_cast<vk::Image>(*b.image) : nullptr, vkhlf::checked_cast<uint32_t>(imageOpaqueBindBinds.back().back().size()),
@@ -295,7 +295,7 @@ namespace vkhlf
         imageBindBinds.back().back().reserve(b.binds.size());
         for (auto const& bb : b.binds)
         {
-          imageBindBinds.back().back().push_back(vk::SparseImageMemoryBind(bb.subresource, bb.offset, bb.extent, bb.memory ? static_cast<vk::DeviceMemory>(*bb.memory->get<DeviceMemoryChunk>()) : nullptr,
+          imageBindBinds.back().back().push_back(vk::SparseImageMemoryBind(bb.subresource, bb.offset, bb.extent, bb.memory ? static_cast<vk::DeviceMemory>(*bb.memory) : nullptr,
                                                                            bb.memoryOffset + (bb.memory ? bb.memory->getOffset() : 0), bb.flags));
         }
         imageBinds.back().push_back(vk::SparseImageMemoryBindInfo(b.image ? static_cast<vk::Image>(*b.image) : nullptr, vkhlf::checked_cast<uint32_t>(imageBindBinds.back().back().size()),

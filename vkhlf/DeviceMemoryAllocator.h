@@ -25,40 +25,49 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #pragma once
+#include "vk_mem_alloc.h"
 
 #include <vkhlf/Config.h>
-#include <vkhlf/Device.h>
+//#include <vkhlf/Device.h>
 #include <vkhlf/Reference.h>
 
 namespace vkhlf
 {
-  class DeviceMemoryAllocator : public Reference<Device, Allocator>
+  class DeviceMemoryAllocator
   {
     public:
-      VKHLF_API DeviceMemoryAllocator(std::shared_ptr<Device> const& device, vk::DeviceSize chunkSize, std::shared_ptr<Allocator> const& hostAllocator);
+      struct ImageInfo
+      {
+        std::shared_ptr<DeviceMemory> m_deviceMemory;
+        vk::Image m_image;
+      };
+
+      struct BufferInfo
+      {
+        std::shared_ptr<DeviceMemory> m_deviceMemory;
+        vk::Buffer m_buffer;
+      };
+
+
+      VKHLF_API DeviceMemoryAllocator(Device& device, vkhlf::Instance& instance);
       VKHLF_API virtual ~DeviceMemoryAllocator();
 
-      VKHLF_API std::shared_ptr<DeviceMemory> allocate(vk::MemoryRequirements allocationSize, uint32_t memoryTypeIndex);
+      VKHLF_API ImageInfo createImage(vk::ImageCreateInfo imageInfo, bool hostVisible);
+      VKHLF_API BufferInfo createBuffer(vk::BufferCreateInfo bufferInfo, bool hostVisible);
+      VKHLF_API void destroyBuffer(vk::Buffer buffer);
+
+
+      VKHLF_API VmaAllocator getAllocator() {
+        return m_allocator;
+      }
+
 
       DeviceMemoryAllocator(DeviceMemoryAllocator const& rhs) = delete;
       DeviceMemoryAllocator & operator=(DeviceMemoryAllocator const& rhs) = delete;
 
     private:
-      struct ChunkData
-      {
-        ChunkData(std::shared_ptr<DeviceMemoryChunk> const& c, vk::DeviceSize o)
-          : chunk(c)
-          , offset(o)
-        {}
-
-        std::shared_ptr<DeviceMemoryChunk>  chunk;
-        vk::DeviceSize                      offset;
-      };
-
-      std::map<uint32_t, ChunkData> m_chunks;       // map from memoryTypeIndex to current chunk
-      vk::DeviceSize                m_chunkSize;
+      VmaAllocator m_allocator;
   };
 
 } // namespace vkh

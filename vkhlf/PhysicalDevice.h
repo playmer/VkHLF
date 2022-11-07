@@ -75,7 +75,8 @@ namespace vkhlf
       VKHLF_API virtual ~PhysicalDevice();
 
     public:
-      VKHLF_API std::shared_ptr<Device>                      createDevice(vk::ArrayProxy<const DeviceQueueCreateInfo> queueCreateInfos      = DeviceQueueCreateInfo(0, 1.0f),
+      VKHLF_API std::shared_ptr<Device>                      createDevice(vkhlf::Instance&                         instance,
+                                                                       vk::ArrayProxy<const DeviceQueueCreateInfo> queueCreateInfos      = DeviceQueueCreateInfo(0, 1.0f),
                                                                        vk::ArrayProxy<const std::string>           enabledLayerNames     = nullptr,
                                                                        vk::ArrayProxy<const std::string>           enabledExtensionNames = nullptr,
                                                                        vk::PhysicalDeviceFeatures const&           enabledFeatures       = {},

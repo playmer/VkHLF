@@ -86,7 +86,9 @@ namespace vkhlf
       VKHLF_API std::shared_ptr<vkhlf::PhysicalDevice> getPhysicalDevice(size_t index);
       VKHLF_API PFN_vkVoidFunction                   getProcAddress(std::string const& name) const;
 
-      VKHLF_API operator vk::Instance();
+      VKHLF_API operator vk::Instance() const;
+
+      VKHLF_API vk::Instance toVk() const;
 
       Instance(Instance const& rhs) = delete;
       Instance & operator=(Instance const& rhs) = delete;
@@ -98,7 +100,12 @@ namespace vkhlf
       vk::Instance                                    m_instance;
   };
 
-  inline Instance::operator vk::Instance()
+  inline Instance::operator vk::Instance() const
+  {
+    return m_instance;
+  }
+
+  inline vk::Instance Instance::toVk() const
   {
     return m_instance;
   }

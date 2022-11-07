@@ -25,6 +25,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define VMA_IMPLEMENTATION
 
 #include <vkhlf/Allocator.h>
 #include <vkhlf/Device.h>
@@ -32,72 +33,62 @@
 #include <vkhlf/DeviceMemoryAllocator.h>
 #include <vkhlf/DeviceMemoryChunk.h>
 #include <vkhlf/PhysicalDevice.h>
+#include <vkhlf/Instance.h>
 
 namespace vkhlf
 {
 
-  DeviceMemoryAllocator::DeviceMemoryAllocator(std::shared_ptr<Device> const& device, vk::DeviceSize chunkSize, std::shared_ptr<Allocator> const& hostAllocator)
-    : Reference(device, hostAllocator)
-    , m_chunkSize(chunkSize)
-  {}
+  DeviceMemoryAllocator::DeviceMemoryAllocator(Device& device, vkhlf::Instance& instance)
+  {
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_1;
+    allocatorInfo.physicalDevice = static_cast<vk::PhysicalDevice>(*device.get<PhysicalDevice>());;
+    allocatorInfo.device = static_cast<vk::Device>(device);
+    allocatorInfo.instance = static_cast<vk::Instance>(instance);
+    vmaCreateAllocator(&allocatorInfo, &m_allocator);
+  }
 
   DeviceMemoryAllocator::~DeviceMemoryAllocator()
   {}
 
-  static vk::DeviceSize GreatestCommonDenominator(vk::DeviceSize a, vk::DeviceSize b)
+  DeviceMemoryAllocator::ImageInfo DeviceMemoryAllocator::createImage(vk::ImageCreateInfo imageInfo, bool hostVisible)
   {
-    if (0 == b)
+    VkImage image;
+    VmaAllocation allocation;
+    VmaAllocationInfo allocationInfo;
+    VkImageCreateInfo imageCreateInfo = imageInfo;
+
+    VmaAllocationCreateInfo allocCreateInfo = {};
+    allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+    if (hostVisible)
     {
-      return a;
+      allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+      allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
     }
 
-    return GreatestCommonDenominator(b, a % b);
+    VK_VERIFY(static_cast<vk::Result>(vmaCreateImage(m_allocator, &imageCreateInfo, &allocCreateInfo, &image, &allocation, &allocationInfo)));
+
+    return { std::make_shared<DeviceMemory>(m_allocator, allocation, allocationInfo), image };
   }
 
-  static vk::DeviceSize LeastCommonDenominator(vk::DeviceSize a, vk::DeviceSize b)
+  DeviceMemoryAllocator::BufferInfo DeviceMemoryAllocator::createBuffer(vk::BufferCreateInfo bufferInfo, bool hostVisible)
   {
-    return (a * b) / GreatestCommonDenominator(a, b);
-  }
+    VkBuffer buffer;
+    VmaAllocation allocation;
+    VmaAllocationInfo allocationInfo;
+    VkBufferCreateInfo buffInfo = bufferInfo;
 
-  std::shared_ptr<DeviceMemory> DeviceMemoryAllocator::allocate(vk::MemoryRequirements allocationReqs, uint32_t memoryTypeIndex)
-  {
-    auto const allocationSize = allocationReqs.size;
-
-    auto const nonCoherentAtomSize = get<Device>()->get<PhysicalDevice>()->getProperties().limits.nonCoherentAtomSize;
-    auto const commonMultiple = LeastCommonDenominator(nonCoherentAtomSize, allocationReqs.alignment);
-
-    auto const remainder = allocationSize % commonMultiple;
-    auto const actualAllocationSize = (0 == remainder) ? allocationSize : (commonMultiple - remainder) + allocationSize;
-
-    if (m_chunkSize < actualAllocationSize)
+    VmaAllocationCreateInfo allocCreateInfo = {};
+    allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+    if (hostVisible)
     {
-      std::shared_ptr<DeviceMemoryChunk> chunk = std::make_shared<DeviceMemoryChunk>(get<Device>(), actualAllocationSize, memoryTypeIndex, get<Allocator>());
-      return std::make_shared<DeviceMemory>(chunk, 0, actualAllocationSize);
+      allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+      allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
     }
 
-    auto chunkIt = m_chunks.find(memoryTypeIndex);
-    if (chunkIt == m_chunks.end())
-    {
-      chunkIt = m_chunks.insert(std::make_pair(memoryTypeIndex, ChunkData(std::make_shared<DeviceMemoryChunk>(get<Device>(), m_chunkSize, memoryTypeIndex, get<Allocator>()), 0))).first;
-    }
-    if (m_chunkSize < (chunkIt->second.offset + actualAllocationSize))
-    {
-      chunkIt->second.chunk = std::make_shared<DeviceMemoryChunk>(get<Device>(), m_chunkSize, memoryTypeIndex, get<Allocator>());
-      chunkIt->second.offset = 0;
-    }
+    VK_VERIFY(static_cast<vk::Result>(vmaCreateBuffer(m_allocator, &buffInfo, &allocCreateInfo, &buffer, &allocation, &allocationInfo)));
 
-    auto const offsetIntoChunk = chunkIt->second.offset;
-    chunkIt->second.offset += actualAllocationSize;
-
-    
-    #if !defined(NDEBUG)
-      auto const sizeForAllocation = chunkIt->second.chunk->m_size - offsetIntoChunk;
-      if (!(allocationSize <= sizeForAllocation)) __debugbreak();
-    //  if (chunkIt->second.offset > chunkIt->second.chunk->m_size) __debugbreak();
-    //  if (chunkIt->second.offset > 0x100000) __debugbreak();
-    #endif
-
-    return std::make_shared<DeviceMemory>(chunkIt->second.chunk, offsetIntoChunk, actualAllocationSize);
+    return { std::make_shared<DeviceMemory>(m_allocator, allocation, allocationInfo), buffer };
   }
 
 } // namespace vkh

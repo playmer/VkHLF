@@ -27,6 +27,7 @@
 
 
 #pragma once
+#include "vk_mem_alloc.h"
 
 #include <vkhlf/Config.h>
 #include <vkhlf/Device.h>
@@ -36,10 +37,10 @@ namespace vkhlf
 {
   VKHLF_API uint32_t determineMemoryTypeIndex(vk::PhysicalDeviceMemoryProperties const& memoryProperties, uint32_t typeBits, vk::MemoryPropertyFlags requirements_mask);
 
-  class DeviceMemory : public Reference<DeviceMemoryChunk>
+  class DeviceMemory
   {
     public:
-      VKHLF_API DeviceMemory(std::shared_ptr<DeviceMemoryChunk> const& chunk, vk::DeviceSize offset, vk::DeviceSize size);
+      VKHLF_API DeviceMemory(VmaAllocator allocator, VmaAllocation allocation, VmaAllocationInfo allocationInfo);
       VKHLF_API virtual ~DeviceMemory();
 
       VKHLF_API void           flush(vk::DeviceSize offset, vk::DeviceSize size) const;
@@ -50,22 +51,30 @@ namespace vkhlf
       VKHLF_API void *         map(vk::DeviceSize offset, vk::DeviceSize size);
       VKHLF_API void           unmap();
 
+      VKHLF_API VmaAllocation getAllocation() { return m_allocation; }
+
       DeviceMemory(DeviceMemory const& rhs) = delete;
       DeviceMemory & operator=(DeviceMemory const& rhs) = delete;
 
+      operator vk::DeviceMemory()
+      {
+        return m_allocationInfo.deviceMemory;
+      }
+
     private:
-      vk::DeviceSize  m_offset;
-      vk::DeviceSize  m_size;
+      VmaAllocator m_allocator;
+      VmaAllocation m_allocation;
+      VmaAllocationInfo m_allocationInfo;
   };
 
   inline vk::DeviceSize DeviceMemory::getOffset() const
   {
-    return m_offset;
+    return m_allocationInfo.offset;
   }
 
   inline vk::DeviceSize DeviceMemory::getSize() const
   {
-    return m_size;
+    return m_allocationInfo.size;
   }
 
   struct MappedDeviceMemory

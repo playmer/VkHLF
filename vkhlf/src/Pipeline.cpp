@@ -247,8 +247,9 @@ namespace vkhlf
 
     vk::ComputePipelineCreateInfo createInfo(pipelineCreateFlags, vkStage, layout ? static_cast<vk::PipelineLayout>(*layout) : nullptr,
                                              basePipeline ? static_cast<vk::Pipeline>(*basePipeline) : nullptr, basePipelineIndex);
-
-    setPipeline(static_cast<vk::Device>(*get<Device>()).createComputePipeline(pipelineCache ? static_cast<vk::PipelineCache>(*pipelineCache) : nullptr, createInfo, *get<Allocator>()));
+    auto result = static_cast<vk::Device>(*get<Device>()).createComputePipeline(pipelineCache ? static_cast<vk::PipelineCache>(*pipelineCache) : nullptr, createInfo, *get<Allocator>());
+    VK_VERIFY(result.result);
+    setPipeline(result.value);
   }
 
   GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> const & device, std::shared_ptr<PipelineCache> const& pipelineCache, vk::PipelineCreateFlags pipelineCreateFlags,
@@ -356,7 +357,9 @@ namespace vkhlf
                                               m_depthStencilStateCreateInfo.get(), m_colorBlendStateCreateInfo ? &vkColorBlendState : nullptr,
                                               m_dynamicStateCreateInfo ? &vkDynamicState : nullptr, getPipelineLayout() ? *getPipelineLayout() : vk::PipelineLayout(),
                                               m_renderPass ? *m_renderPass : vk::RenderPass(), m_subpass, getBasePipeline() ? *getBasePipeline() : vk::Pipeline(), getBasePipelineIndex());
-    setPipeline(static_cast<vk::Device>(*get<Device>()).createGraphicsPipeline(getPipelineCache() ? *getPipelineCache() : vk::PipelineCache(), createInfo, *get<Allocator>()));
+    auto result = static_cast<vk::Device>(*get<Device>()).createGraphicsPipeline(getPipelineCache() ? *getPipelineCache() : vk::PipelineCache(), createInfo, *get<Allocator>());
+    VK_VERIFY(result.result);
+    setPipeline(result.value);
   }
 
 #if !defined(NDEBUG)

@@ -48,7 +48,8 @@ namespace vkhlf
   {
   }
 
-  std::shared_ptr<Device> PhysicalDevice::createDevice(vk::ArrayProxy<const DeviceQueueCreateInfo>  queueCreateInfos,
+  std::shared_ptr<Device> PhysicalDevice::createDevice(vkhlf::Instance&                             instance,
+                                                       vk::ArrayProxy<const DeviceQueueCreateInfo>  queueCreateInfos,
                                                        vk::ArrayProxy<const std::string>            enabledLayerNames,
                                                        vk::ArrayProxy<const std::string>            enabledExtensionNames,
                                                        vk::PhysicalDeviceFeatures const&            enabledFeatures,
@@ -67,7 +68,7 @@ namespace vkhlf
     // - queueFamilyIndex is less than pQueueFamilyPropertyCount returned by vkGetPhysicalDeviceQueueFamilyProperties
     // - queueCount is less than or equal to the value of the queueCount member of the VkQueueFamilyProperties structure, as returned by vkGetPhysicalDeviceQueueFamilyProperties in the pQueueFamilyProperties[queueFamilyIndex]
 
-    return Device::create(shared_from_this(), queueCreateInfos, enabledLayerNames, enabledExtensionNames, enabledFeatures, allocator);
+    return Device::create(instance, shared_from_this(), queueCreateInfos, enabledLayerNames, enabledExtensionNames, enabledFeatures, allocator);
   }
 
   std::vector<DisplayPlaneProperties> PhysicalDevice::getDisplayPlaneProperties()

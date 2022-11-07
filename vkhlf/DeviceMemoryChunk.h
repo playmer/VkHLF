@@ -25,7 +25,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
+/*
 #pragma once
 
 #include <vkhlf/Config.h>
@@ -67,3 +67,4 @@ namespace vkhlf
   }
 
 } // namespace vkh
+*/

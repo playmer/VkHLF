@@ -67,22 +67,22 @@ namespace vkhlf
     return *this;
   }
 
-  std::shared_ptr<Device> Device::create(std::shared_ptr<PhysicalDevice> const& physicalDevice, vk::ArrayProxy<const DeviceQueueCreateInfo> queueCreateInfos,
+  std::shared_ptr<Device> Device::create(vkhlf::Instance& instance, std::shared_ptr<PhysicalDevice> const& physicalDevice, vk::ArrayProxy<const DeviceQueueCreateInfo> queueCreateInfos,
                                          vk::ArrayProxy<const std::string> enabledLayerNames, vk::ArrayProxy<const std::string> enabledExtensionNames,
                                          vk::PhysicalDeviceFeatures const& enabledFeatures, std::shared_ptr<Allocator> const& allocator)
   {
-    std::shared_ptr<Device> device(new Device(physicalDevice, allocator));
-    device->init(queueCreateInfos, enabledLayerNames, enabledExtensionNames, enabledFeatures);
+    std::shared_ptr<Device> device(new Device(instance, physicalDevice, allocator));
+    device->init(instance, queueCreateInfos, enabledLayerNames, enabledExtensionNames, enabledFeatures);
     return device;
   }
 
-  Device::Device(std::shared_ptr<PhysicalDevice> const& physicalDevice, std::shared_ptr<Allocator> const& allocator)
+  Device::Device(vkhlf::Instance& instance, std::shared_ptr<PhysicalDevice> const& physicalDevice, std::shared_ptr<Allocator> const& allocator)
     : Reference(physicalDevice, allocator)
   {
 
   }
 
-  void Device::init(vk::ArrayProxy<const vkhlf::DeviceQueueCreateInfo> queueCreateInfos, vk::ArrayProxy<const std::string> enabledLayerNames,
+  void Device::init(vkhlf::Instance& instance, vk::ArrayProxy<const vkhlf::DeviceQueueCreateInfo> queueCreateInfos, vk::ArrayProxy<const std::string> enabledLayerNames,
                     vk::ArrayProxy<const std::string> enabledExtensionNames, vk::PhysicalDeviceFeatures const& enabledFeatures)
   {
 #if !defined(NDEBUG)
@@ -127,6 +127,8 @@ namespace vkhlf
       auto it = m_queues.emplace(createInfo.queueFamilyIndex, std::move(queues));
       assert(it.second && "duplicate queueFamilyIndex");
     }
+
+    m_allocator = std::make_unique<DeviceMemoryAllocator>(*this, instance);
   }
 
   Device::~Device( )
@@ -185,24 +187,23 @@ namespace vkhlf
   std::shared_ptr<vkhlf::Image> Device::createImage(vk::ImageCreateFlags createFlags, vk::ImageType type, vk::Format format, vk::Extent3D const& extent, uint32_t mipLevels, uint32_t arraySize,
                                                   vk::SampleCountFlagBits samples, vk::ImageTiling tiling, vk::ImageUsageFlags usageFlags, vk::SharingMode sharingMode,
                                                   std::vector<uint32_t> const& queueFamilyIndices, vk::ImageLayout initialLayout, vk::MemoryPropertyFlags memoryPropertyFlags,
-                                                  std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator, std::shared_ptr<Allocator> const& imageAllocator)
+                                                  std::shared_ptr<Allocator> const& imageAllocator)
   {
     return std::make_shared<Image>(shared_from_this(), createFlags, type, format, extent, mipLevels, arraySize, samples, tiling, usageFlags, sharingMode, queueFamilyIndices, initialLayout,
-                                   memoryPropertyFlags, deviceMemoryAllocator, imageAllocator);
+                                   memoryPropertyFlags, imageAllocator);
   }
 
   std::shared_ptr<vkhlf::Buffer> Device::createBuffer(vk::BufferCreateFlags createFlags, vk::DeviceSize size, vk::BufferUsageFlags usageFlags, vk::SharingMode sharingMode,
                                                     vk::ArrayProxy<const uint32_t> queueFamilyIndices, vk::MemoryPropertyFlags memoryPropertyFlags,
-                                                    std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator, std::shared_ptr<Allocator> const& bufferAllocator)
+                                                    std::shared_ptr<Allocator> const& bufferAllocator)
   {
-    return std::make_shared<Buffer>(shared_from_this(), createFlags, size, usageFlags, sharingMode, queueFamilyIndices, memoryPropertyFlags, deviceMemoryAllocator, bufferAllocator);
+    return std::make_shared<Buffer>(shared_from_this(), createFlags, size, usageFlags, sharingMode, queueFamilyIndices, memoryPropertyFlags, bufferAllocator);
   }
 
   std::shared_ptr<vkhlf::Buffer> Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usageFlags, vk::SharingMode sharingMode, vk::ArrayProxy<const uint32_t> queueFamilyIndices,
-                                                    vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator,
-                                                    std::shared_ptr<Allocator> const& bufferAllocator)
+                                                    vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<Allocator> const& bufferAllocator)
   {
-    return std::make_shared<Buffer>(shared_from_this(), vk::BufferCreateFlags(), size, usageFlags, sharingMode, queueFamilyIndices, memoryPropertyFlags, deviceMemoryAllocator, bufferAllocator);
+    return std::make_shared<Buffer>(shared_from_this(), vk::BufferCreateFlags(), size, usageFlags, sharingMode, queueFamilyIndices, memoryPropertyFlags, bufferAllocator);
   }
 
   std::shared_ptr<vkhlf::CommandPool> Device::createCommandPool(vk::CommandPoolCreateFlags flags, uint32_t familyIndex, std::shared_ptr<Allocator> const& allocator)
@@ -263,12 +264,6 @@ namespace vkhlf
   std::shared_ptr<vkhlf::DescriptorSetLayout> Device::createDescriptorSetLayout(vk::ArrayProxy<const DescriptorSetLayoutBinding> bindings, std::shared_ptr<Allocator> const& allocator)
   {
     return std::make_shared<DescriptorSetLayout>(shared_from_this(), bindings, allocator);
-  }
-
-  std::shared_ptr<vkhlf::DeviceMemory> Device::allocateMemory(vk::MemoryRequirements allocationReqs, uint32_t memoryTypeIndex, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator)
-  {
-    assert(deviceMemoryAllocator);
-    return deviceMemoryAllocator->allocate(allocationReqs, memoryTypeIndex);
   }
 
   std::shared_ptr<vkhlf::Event> Device::createEvent(std::shared_ptr<Allocator> const& allocator)
@@ -455,8 +450,7 @@ namespace vkhlf
     vk::ImageTiling tiling = (formatProperties.linearTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment) ? vk::ImageTiling::eLinear : vk::ImageTiling::eOptimal;
 
     m_depthImage = device->createImage({}, vk::ImageType::e2D, depthFormat, vk::Extent3D(m_extent.width, m_extent.height, 1), 1, 1, vk::SampleCountFlagBits::e1, tiling,
-                                       vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, {}, vk::ImageLayout::eUndefined, {} /* No requirements */, deviceMemoryAllocator,
-                                       imageAllocator);
+                                       vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, {}, vk::ImageLayout::eUndefined, {} /* No requirements */, imageAllocator);
 
     vk::ImageAspectFlags aspectMask = vk::ImageAspectFlagBits::eDepth;
     if ((depthFormat == vk::Format::eD16UnormS8Uint) ||

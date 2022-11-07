@@ -48,8 +48,7 @@ namespace vkhlf
 
   Image::Image(std::shared_ptr<Device> const& device, vk::ImageCreateFlags createFlags, vk::ImageType type, vk::Format format, vk::Extent3D extent, uint32_t mipLevels, uint32_t arrayLayers,
                vk::SampleCountFlagBits samples, vk::ImageTiling tiling, vk::ImageUsageFlags usageFlags, vk::SharingMode sharingMode, std::vector<uint32_t> const& queueFamilyIndices,
-               vk::ImageLayout initialLayout, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator,
-               std::shared_ptr<Allocator> const& imageAllocator)
+               vk::ImageLayout initialLayout, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<Allocator> const& imageAllocator)
     : Reference(device, nullptr, imageAllocator)
     , m_arrayLayers(arrayLayers)
     , m_extent(extent)
@@ -65,20 +64,17 @@ namespace vkhlf
   {
     vk::ImageCreateInfo createInfo(createFlags, m_type, m_format, m_extent, m_mipLevels, m_arrayLayers, m_samples, m_tiling, usageFlags, m_sharingMode,
                                    vkhlf::checked_cast<uint32_t>(m_queueFamilyIndices.size()), m_queueFamilyIndices.data(), initialLayout);
-    m_image = static_cast<vk::Device>(*get<Device>()).createImage(createInfo, *get<Allocator>());
 
-    vk::MemoryRequirements memReqs = getMemoryRequirements();
-    uint32_t memoryTypeIndex = determineMemoryTypeIndex(get<Device>()->get<PhysicalDevice>()->getMemoryProperties(), memReqs.memoryTypeBits, m_memoryPropertyFlags);
-    assert(memoryTypeIndex != ~0);
-    set<DeviceMemory>(get<Device>()->allocateMemory(memReqs, memoryTypeIndex, deviceMemoryAllocator ? deviceMemoryAllocator : std::make_shared<DeviceMemoryAllocator>(get<Device>(), 0, nullptr)));
-    static_cast<vk::Device>(*get<Device>()).bindImageMemory(m_image, static_cast<vk::DeviceMemory>(*get<DeviceMemory>()->get<DeviceMemoryChunk>()), get<DeviceMemory>()->getOffset());
+    auto [deviceMemory, image] = get<Device>()->getDeviceMemoryAllocator().createImage(createInfo, static_cast<bool>(memoryPropertyFlags & vk::MemoryPropertyFlagBits::eHostVisible));
+    m_image = image;
+    set<DeviceMemory>(deviceMemory);
   }
 
   Image::~Image( )
   {
     if (m_managed)
     {
-      static_cast<vk::Device>(*get<Device>()).destroyImage(m_image, *get<Allocator>());
+      vmaDestroyImage(get<Device>()->getDeviceMemoryAllocator().getAllocator(), m_image, get<DeviceMemory>()->getAllocation());
     }
   }
 
@@ -200,7 +196,7 @@ namespace vkhlf
     {
       m_mappingImage = m_image->get<Device>()->createImage({}, m_image->getType(), m_image->getFormat(), m_image->getExtent(), m_image->getMipLevels(), m_image->getArrayLayers(), m_image->getSamples(),
                                                            vk::ImageTiling::eLinear, vk::ImageUsageFlagBits::eTransferSrc, m_image->getSharingMode(), m_image->getQueueFamilyIndices(),
-                                                           vk::ImageLayout::ePreinitialized, vk::MemoryPropertyFlagBits::eHostVisible, nullptr, m_image->get<Allocator>());
+                                                           vk::ImageLayout::ePreinitialized, vk::MemoryPropertyFlagBits::eHostVisible, nullptr);
       setImageLayout(m_commandBuffer, m_mappingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePreinitialized, vk::ImageLayout::eGeneral);
       m_pData = m_mappingImage->get<DeviceMemory>()->map(m_mappingImage->get<DeviceMemory>()->getOffset(), m_mappingImage->get<DeviceMemory>()->getSize());
     }

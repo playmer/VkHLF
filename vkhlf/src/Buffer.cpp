@@ -40,25 +40,20 @@ namespace vkhlf
 {
 
   Buffer::Buffer(std::shared_ptr<Device> const& device, vk::BufferCreateFlags createFlags, vk::DeviceSize size, vk::BufferUsageFlags usageFlags, vk::SharingMode sharingMode,
-                 vk::ArrayProxy<const uint32_t> queueFamilyIndices, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator,
-                 std::shared_ptr<Allocator> const& bufferAllocator)
+                 vk::ArrayProxy<const uint32_t> queueFamilyIndices, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<Allocator> const& bufferAllocator)
     : Reference(device, nullptr, bufferAllocator)
     , m_memoryPropertyFlags(memoryPropertyFlags)
     , m_size(size)
   {
     vk::BufferCreateInfo createInfo(createFlags, size, usageFlags, sharingMode, vkhlf::checked_cast<uint32_t>(queueFamilyIndices.size()), queueFamilyIndices.data());
-    m_buffer = static_cast<vk::Device>(*get<Device>()).createBuffer(createInfo, *get<Allocator>());
-
-    vk::MemoryRequirements memReqs = getMemoryRequirements();
-    uint32_t memoryTypeIndex = determineMemoryTypeIndex(get<Device>()->get<PhysicalDevice>()->getMemoryProperties(), memReqs.memoryTypeBits, m_memoryPropertyFlags);
-    assert(memoryTypeIndex != ~0 && "No mappable, coherent memory");
-    set<DeviceMemory>(get<Device>()->allocateMemory(memReqs, memoryTypeIndex, deviceMemoryAllocator ? deviceMemoryAllocator : std::make_shared<DeviceMemoryAllocator>(get<Device>(), 0, nullptr)));
-    static_cast<vk::Device>(*get<Device>()).bindBufferMemory(m_buffer, static_cast<vk::DeviceMemory>(*get<DeviceMemory>()->get<DeviceMemoryChunk>()), get<DeviceMemory>()->getOffset());
+    auto [deviceMemory, buffer] = get<Device>()->getDeviceMemoryAllocator().createBuffer(createInfo, static_cast<bool>(memoryPropertyFlags & vk::MemoryPropertyFlagBits::eHostVisible));
+    m_buffer = buffer;
+    set<DeviceMemory>(deviceMemory);
   }
 
   Buffer::~Buffer( )
   {
-    static_cast<vk::Device>(*get<Device>()).destroyBuffer(m_buffer, *get<Allocator>());
+    vmaDestroyBuffer(get<Device>()->getDeviceMemoryAllocator().getAllocator(), m_buffer, get<DeviceMemory>()->getAllocation());
   }
 
   std::shared_ptr<BufferView> Buffer::createBufferView(vk::Format format, vk::DeviceSize offset, vk::DeviceSize range, std::shared_ptr<Allocator> const& allocator)

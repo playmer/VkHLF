@@ -25,7 +25,6 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #include <vkhlf/Allocator.h>
 #include <vkhlf/Device.h>
 #include <vkhlf/DeviceMemory.h>
@@ -54,10 +53,10 @@ namespace vkhlf
     return ~0;
   }
 
-  DeviceMemory::DeviceMemory(std::shared_ptr<DeviceMemoryChunk> const& chunk, vk::DeviceSize offset, vk::DeviceSize size)
-    : Reference(chunk)
-    , m_offset(offset)
-    , m_size(size)
+  DeviceMemory::DeviceMemory(VmaAllocator allocator, VmaAllocation allocation, VmaAllocationInfo allocationInfo)
+    : m_allocator{allocator}
+    , m_allocation{allocation}
+    , m_allocationInfo{allocationInfo}
   {}
 
   DeviceMemory::~DeviceMemory( )
@@ -65,30 +64,24 @@ namespace vkhlf
 
   void DeviceMemory::flush(vk::DeviceSize offset, vk::DeviceSize size) const
   {
-    assert( (offset + size <= m_size) || (VK_WHOLE_SIZE == size) );
-    get<DeviceMemoryChunk>()->flush(m_offset + offset, size);
-  }
-
-  vk::DeviceSize DeviceMemory::getCommitment() const
-  {
-    return get<DeviceMemoryChunk>()->getCommitment();
+    vmaFlushAllocation(m_allocator, m_allocation, offset, size);
   }
 
   void DeviceMemory::invalidate(vk::DeviceSize offset, vk::DeviceSize size) const
   {
-    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
-    get<DeviceMemoryChunk>()->invalidate(m_offset + offset, size);
+    vmaInvalidateAllocation(m_allocator, m_allocation, offset, size);
   }
 
   void * DeviceMemory::map(vk::DeviceSize offset, vk::DeviceSize size)
   {
-    assert((offset + size <= m_size) || (VK_WHOLE_SIZE == size));
-    return get<DeviceMemoryChunk>()->map(m_offset + offset, size);
+    void* map;
+    vmaMapMemory(m_allocator, m_allocation, &map);
+    return map;
   }
 
   void DeviceMemory::unmap()
   {
-    get<DeviceMemoryChunk>()->unmap();
+    vmaUnmapMemory(m_allocator, m_allocation);
   }
 
   MappedDeviceMemory::MappedDeviceMemory( std::shared_ptr<vkhlf::DeviceMemory> const& deviceMemory, vk::DeviceSize offset, vk::DeviceSize size )

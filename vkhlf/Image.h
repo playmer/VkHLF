@@ -45,8 +45,7 @@ namespace vkhlf
       VKHLF_API Image(std::shared_ptr<Device> const& device, vk::Image const& image, std::shared_ptr<Allocator> const& allocator = nullptr);
       VKHLF_API Image(std::shared_ptr<Device> const& device, vk::ImageCreateFlags createFlags, vk::ImageType type, vk::Format format, vk::Extent3D extent, uint32_t mipLevels, uint32_t arrayLayers,
                    vk::SampleCountFlagBits samples, vk::ImageTiling tiling, vk::ImageUsageFlags usageFlags, vk::SharingMode sharingMode, std::vector<uint32_t> const& queueFamilyIndices,
-                   vk::ImageLayout initialLayout, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator,
-                   std::shared_ptr<Allocator> const& imageAllocator);
+                   vk::ImageLayout initialLayout, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<Allocator> const& imageAllocator);
       VKHLF_API virtual ~Image();
 
       VKHLF_API std::shared_ptr<vkhlf::ImageView>                createImageView(vk::ImageViewType viewType, vk::Format format,

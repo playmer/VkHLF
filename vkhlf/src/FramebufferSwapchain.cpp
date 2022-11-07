@@ -41,7 +41,6 @@ namespace vkhlf {
         vk::Format surfaceFormat,
         vk::Format depthFormat,
         std::shared_ptr<RenderPass> const& renderPass,
-        std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator,
         std::shared_ptr<Allocator> const& swapchainAllocator,
         std::shared_ptr<Allocator> const& imageAllocator,
         std::shared_ptr<Allocator> const& imageViewAllocator)
@@ -103,7 +102,7 @@ namespace vkhlf {
 
         m_depthImage = device->createImage({}, vk::ImageType::e2D, depthFormat, vk::Extent3D(m_extent.width, m_extent.height, 1), 1, 1, vk::SampleCountFlagBits::e1, tiling,
             vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, {}, vk::ImageLayout::eUndefined, {} /* No requirements */,
-            deviceMemoryAllocator, imageAllocator);
+            imageAllocator);
 
         // determine ImageAspect based on format
         vk::ImageAspectFlags aspectMask;

@@ -36,12 +36,11 @@
 
 namespace vkhlf
 {
-  class Buffer : public Reference<Device,DeviceMemory,Allocator>, public std::enable_shared_from_this<Buffer>
+  class Buffer : public Reference<Device, DeviceMemory, Allocator>, public std::enable_shared_from_this<Buffer>
   {
     public:
       VKHLF_API Buffer(std::shared_ptr<Device> const & device, vk::BufferCreateFlags createFlags, vk::DeviceSize size, vk::BufferUsageFlags usageFlags, vk::SharingMode sharingMode,
-                    vk::ArrayProxy<const uint32_t> queueFamilyIndices, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator,
-                    std::shared_ptr<Allocator> const& bufferAllocator);
+                    vk::ArrayProxy<const uint32_t> queueFamilyIndices, vk::MemoryPropertyFlags memoryPropertyFlags, std::shared_ptr<Allocator> const& bufferAllocator);
       VKHLF_API virtual ~Buffer();
 
       VKHLF_API std::shared_ptr<vkhlf::BufferView>  createBufferView(vk::Format format, vk::DeviceSize offset = 0, vk::DeviceSize range = ~0, std::shared_ptr<Allocator> const& allocator = nullptr);

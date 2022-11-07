@@ -54,7 +54,8 @@ namespace vkhlf
   class Device : public Reference<PhysicalDevice, Allocator>, public std::enable_shared_from_this<Device>
   {
     public:
-      VKHLF_API static std::shared_ptr<Device> create(std::shared_ptr<PhysicalDevice> const& physicalDevice,
+      VKHLF_API static std::shared_ptr<Device> create(vkhlf::Instance& instance, 
+                                                      std::shared_ptr<PhysicalDevice> const& physicalDevice,
                                                       vk::ArrayProxy<const DeviceQueueCreateInfo> queueCreateInfos,
                                                       vk::ArrayProxy<const std::string> enabledLayerNames,
                                                       vk::ArrayProxy<const std::string> enabledExtensionNames,
@@ -63,17 +64,14 @@ namespace vkhlf
 
       VKHLF_API virtual ~Device();
 
-      // allocate DeviceMemory
-      VKHLF_API std::shared_ptr<DeviceMemory> allocateMemory(vk::MemoryRequirements allocationReqs, uint32_t memoryTypeIndex, std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator);
-
       // create buffer
       VKHLF_API std::shared_ptr<Buffer> createBuffer(vk::BufferCreateFlags createFlags, vk::DeviceSize size, vk::BufferUsageFlags usageFlags = vk::BufferUsageFlagBits::eTransferDst,
                                                   vk::SharingMode sharingMode = vk::SharingMode::eExclusive, vk::ArrayProxy<const uint32_t> queueFamilyIndices = nullptr,
                                                   vk::MemoryPropertyFlags memoryPropertyFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
-                                                  std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator = nullptr, std::shared_ptr<Allocator> const& bufferAllocator = nullptr);
+                                                  std::shared_ptr<Allocator> const& bufferAllocator = nullptr);
       VKHLF_API std::shared_ptr<Buffer> createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usageFlags = vk::BufferUsageFlagBits::eTransferDst, vk::SharingMode sharingMode = vk::SharingMode::eExclusive,
                                                   vk::ArrayProxy<const uint32_t> queueFamilyIndices = nullptr, vk::MemoryPropertyFlags memoryPropertyFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
-                                                  std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator = nullptr, std::shared_ptr<Allocator> const& bufferAllocator = nullptr);
+                                                  std::shared_ptr<Allocator> const& bufferAllocator = nullptr);
 
       // create CommandPool
       VKHLF_API std::shared_ptr<CommandPool> createCommandPool(vk::CommandPoolCreateFlags flags = {}, uint32_t familyIndex = 0, std::shared_ptr<Allocator> const& allocator = nullptr);
@@ -104,7 +102,7 @@ namespace vkhlf
                                                 vk::SampleCountFlagBits samples, vk::ImageTiling tiling, vk::ImageUsageFlags usageFlags, vk::SharingMode sharingMode = vk::SharingMode::eExclusive,
                                                 std::vector<uint32_t> const& queueFamilyIndices = {}, vk::ImageLayout initialLayout = vk::ImageLayout::eUndefined,
                                                 vk::MemoryPropertyFlags memoryPropertyFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
-                                                std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator = nullptr, std::shared_ptr<Allocator> const& imageAllocator = nullptr);
+                                                std::shared_ptr<Allocator> const& imageAllocator = nullptr);
 
       // create OcclusionQuery
       VKHLF_API std::shared_ptr<QueryPool> createOcclusionQuery(uint32_t entryCount, std::shared_ptr<Allocator> const& allocator = nullptr);
@@ -161,6 +159,10 @@ namespace vkhlf
                                                         vk::SurfaceTransformFlagBitsKHR preTransform, vk::CompositeAlphaFlagBitsKHR compositeAlpha, vk::PresentModeKHR presentMode, bool clipped,
                                                         std::shared_ptr<Swapchain> const& oldSwapchain = nullptr, std::shared_ptr<Allocator> const& allocator = nullptr);
 
+      VKHLF_API DeviceMemoryAllocator& getDeviceMemoryAllocator()
+      {
+        return *m_allocator;
+      }
       VKHLF_API vk::PhysicalDeviceFeatures const&      getEnabledFeatures() const;
       VKHLF_API PFN_vkVoidFunction                     getProcAddress(std::string const& name) const;
       VKHLF_API std::shared_ptr<Queue>                 getQueue(uint32_t familyIndex, uint32_t queueIndex);
@@ -170,20 +172,25 @@ namespace vkhlf
       VKHLF_API void                                   waitIdle() const;
 
       VKHLF_API operator vk::Device() const;
+      vk::Device toVk()
+      {
+        return static_cast<vk::Device>(*this);
+      }
 
       Device(Device const& rhs) = delete;
       Device & operator=(Device const& rhs) = delete;
 
     protected:
-      VKHLF_API Device(std::shared_ptr<PhysicalDevice> const& physicalDevice, std::shared_ptr<Allocator> const& allocator);
+      VKHLF_API Device(vkhlf::Instance& instance, std::shared_ptr<PhysicalDevice> const& physicalDevice, std::shared_ptr<Allocator> const& allocator);
 
     private:
-      VKHLF_API void init(vk::ArrayProxy<const vkhlf::DeviceQueueCreateInfo> queueCreateInfos, vk::ArrayProxy<const std::string> enabledLayerNames,
+      VKHLF_API void init(vkhlf::Instance& instance, vk::ArrayProxy<const vkhlf::DeviceQueueCreateInfo> queueCreateInfos, vk::ArrayProxy<const std::string> enabledLayerNames,
                           vk::ArrayProxy<const std::string> enabledExtensionNames, vk::PhysicalDeviceFeatures const& enabledFeatures);
 
       vk::Device                                                     m_device;
       vk::PhysicalDeviceFeatures                                     m_enabledFeatures;
       std::map<uint32_t, std::vector<std::unique_ptr<vkhlf::Queue>>> m_queues; // key is queueFamilyIndex
+      std::unique_ptr<DeviceMemoryAllocator>                         m_allocator;
   };
 
   class FramebufferData

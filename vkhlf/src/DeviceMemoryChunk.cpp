@@ -25,6 +25,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
 
 #include <vkhlf/Allocator.h>
 #include <vkhlf/Device.h>
@@ -93,3 +94,4 @@ namespace vkhlf
   }
 
 } // namespace vkh
+*/

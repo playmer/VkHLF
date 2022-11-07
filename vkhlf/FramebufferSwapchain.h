@@ -41,7 +41,6 @@ namespace vkhlf {
             vk::Format surfaceFormat,
             vk::Format depthFormat,
             std::shared_ptr<RenderPass> const& renderPass,
-            std::shared_ptr<DeviceMemoryAllocator> const& deviceMemoryAllocator = nullptr,
             std::shared_ptr<Allocator> const& swapchainAllocator = nullptr,
             std::shared_ptr<Allocator> const& imageAllocator = nullptr,
             std::shared_ptr<Allocator> const& imageViewAllocator = nullptr);
