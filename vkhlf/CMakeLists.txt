@@ -25,7 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  
- cmake_minimum_required(VERSION 2.8)
+ cmake_minimum_required(VERSION 3.20)
 
 #includes
 include_directories(
@@ -144,6 +144,8 @@ else()
   set(VulkanLib Vulkan::Vulkan)
 endif()
 
+target_compile_features(VkHLF PUBLIC cxx_std_17)
+
 target_include_directories(VkHLF
   PUBLIC    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/private>
   PUBLIC    "${VulkanIncludeDir}"
@@ -154,12 +156,6 @@ target_include_directories(VkHLF
 )
 
 target_compile_definitions(VkHLF PUBLIC VULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL=0)
-
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-  target_compile_options(VkHLF PRIVATE -std:c++14)
-else()
-  target_compile_options(VkHLF PRIVATE -std=c++14)
-endif()
 
 target_link_libraries(VkHLF
   ${OPENGL_gl_LIBRARY}
