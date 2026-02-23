@@ -25,7 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 PROJECT( VkHLF )
 
@@ -46,6 +46,7 @@ endif()
 
 #add glslang
 option(ENABLE_GLSLANG_BINARIES "Enable GLSLang Binaries" OFF)
+option(ENABLE_OPT "Enables spirv-opt capability if present" OFF)
 add_subdirectory(3rdparty/glslang)
 
 set(ENV{GLFW_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty/glfw)

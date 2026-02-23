@@ -300,6 +300,7 @@ namespace vkhlf
     return std::make_shared<Semaphore>(shared_from_this(), allocator);
   }
 
+  /*
   std::shared_ptr<vkhlf::ShaderModule> Device::createShaderModule(std::vector<uint32_t> const& code, std::shared_ptr<Allocator> const& allocator)
   {
     return std::make_shared<ShaderModule>(shared_from_this(), code, allocator);
@@ -309,6 +310,7 @@ namespace vkhlf
   {
     return std::make_shared<ShaderModule>(shared_from_this(), glslCode, allocator);
   }
+  */
 
   std::shared_ptr<vkhlf::RenderPass> Device::createRenderPass(vk::ArrayProxy<const vk::AttachmentDescription> attachments, vk::ArrayProxy<const vk::SubpassDescription> subpasses,
                                                             vk::ArrayProxy<const vk::SubpassDependency> dependencies, std::shared_ptr<Allocator> const& allocator)
@@ -316,13 +318,13 @@ namespace vkhlf
     return std::make_shared<RenderPass>(shared_from_this(), attachments, subpasses, dependencies, allocator);
   }
 
-  std::shared_ptr<vkhlf::ComputePipeline> Device::createComputePipeline(std::shared_ptr<vkhlf::PipelineCache> const & pipelineCache, vk::PipelineCreateFlags flags,
-                                                                        PipelineShaderStageCreateInfo const& stage, std::shared_ptr<PipelineLayout> const& layout,
-                                                                        std::shared_ptr<Pipeline> const& basePipeline, int32_t basePipelineIndex,
-                                                                        std::shared_ptr<Allocator> const& allocator)
-  {
-    return std::make_shared<ComputePipeline>(shared_from_this(), pipelineCache, flags, stage, layout, basePipeline, basePipelineIndex, allocator);
-  }
+  //std::shared_ptr<vkhlf::ComputePipeline> Device::createComputePipeline(std::shared_ptr<vkhlf::PipelineCache> const & pipelineCache, vk::PipelineCreateFlags flags,
+  //                                                                      PipelineShaderStageCreateInfo const& stage, std::shared_ptr<PipelineLayout> const& layout,
+  //                                                                      std::shared_ptr<Pipeline> const& basePipeline, int32_t basePipelineIndex,
+  //                                                                      std::shared_ptr<Allocator> const& allocator)
+  //{
+  //  return std::make_shared<ComputePipeline>(shared_from_this(), pipelineCache, flags, stage, layout, basePipeline, basePipelineIndex, allocator);
+  //}
 
   std::shared_ptr<vkhlf::GraphicsPipeline> Device::createGraphicsPipeline(std::shared_ptr<PipelineCache> const& pipelineCache, vk::PipelineCreateFlags flags,
                                                                           vk::ArrayProxy<const PipelineShaderStageCreateInfo> stages,

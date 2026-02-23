@@ -161,7 +161,7 @@ target_link_libraries(VkHLF
   ${OPENGL_gl_LIBRARY}
   ${VulkanLib}
   glslang
-  OGLCompiler
+  #OGLCompiler
   OSDependent
   SPIRV
 )

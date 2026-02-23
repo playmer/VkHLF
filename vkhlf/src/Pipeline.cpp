@@ -232,6 +232,8 @@ namespace vkhlf
     static_cast<vk::Device>(*get<Device>()).destroyPipeline(m_pipeline, *get<Allocator>());
   }
 
+  /*
+
   ComputePipeline::ComputePipeline(std::shared_ptr<Device> const & device, std::shared_ptr<vkhlf::PipelineCache> const & pipelineCache, vk::PipelineCreateFlags pipelineCreateFlags,
                                    PipelineShaderStageCreateInfo const& stage, std::shared_ptr<PipelineLayout> const& layout, std::shared_ptr<Pipeline> const& basePipeline,
                                    int32_t basePipelineIndex, std::shared_ptr<Allocator> const& allocator)
@@ -251,6 +253,7 @@ namespace vkhlf
     VK_VERIFY(result.result);
     setPipeline(result.value);
   }
+  */
 
   GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> const & device, std::shared_ptr<PipelineCache> const& pipelineCache, vk::PipelineCreateFlags pipelineCreateFlags,
                                      vk::ArrayProxy<const PipelineShaderStageCreateInfo> stages, vk::Optional<const PipelineVertexInputStateCreateInfo> vertexInputState,

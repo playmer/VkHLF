@@ -34,7 +34,6 @@
 
 namespace vkhlf
 {
-
   class ShaderModule : public Reference<Device, Allocator>, public std::enable_shared_from_this<ShaderModule>
   {
     public:
@@ -62,6 +61,5 @@ namespace vkhlf
 #endif
   };
 
-  VKHLF_API std::vector<uint32_t> compileGLSLToSPIRV(vk::ShaderStageFlagBits stage, std::string const & source);
-
+  //VKHLF_API std::vector<uint32_t> compileGLSLToSPIRV(vk::ShaderStageFlagBits stage, std::string const & source);
 } // namespace vkhlf

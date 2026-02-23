@@ -154,6 +154,7 @@ namespace vkhlf
     return m_pipeline;
   }
 
+  /*
   class ComputePipeline : public Pipeline
   {
     public:
@@ -161,6 +162,7 @@ namespace vkhlf
                              PipelineShaderStageCreateInfo const& stage, std::shared_ptr<PipelineLayout> const& layout, std::shared_ptr<Pipeline> const& basePipeline,
                              int32_t basePipelineIndex, std::shared_ptr<Allocator> const& allocator);
   };
+  */
 
   class GraphicsPipeline : public Pipeline
   {

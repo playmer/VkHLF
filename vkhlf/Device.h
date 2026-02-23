@@ -108,10 +108,10 @@ namespace vkhlf
       VKHLF_API std::shared_ptr<QueryPool> createOcclusionQuery(uint32_t entryCount, std::shared_ptr<Allocator> const& allocator = nullptr);
 
       // create Pipeline
-      VKHLF_API std::shared_ptr<ComputePipeline> createComputePipeline(std::shared_ptr<PipelineCache> const & pipelineCache, vk::PipelineCreateFlags flags,
-                                                                       PipelineShaderStageCreateInfo const& stage, std::shared_ptr<PipelineLayout> const& pipelineLayout,
-                                                                       std::shared_ptr<Pipeline> const& basePipeline, int32_t basePipelineIndex,
-                                                                       std::shared_ptr<Allocator> const& allocator = nullptr);
+      //VKHLF_API std::shared_ptr<ComputePipeline> createComputePipeline(std::shared_ptr<PipelineCache> const & pipelineCache, vk::PipelineCreateFlags flags,
+      //                                                                 PipelineShaderStageCreateInfo const& stage, std::shared_ptr<PipelineLayout> const& pipelineLayout,
+      //                                                                 std::shared_ptr<Pipeline> const& basePipeline, int32_t basePipelineIndex,
+      //                                                                 std::shared_ptr<Allocator> const& allocator = nullptr);
       VKHLF_API std::shared_ptr<GraphicsPipeline> createGraphicsPipeline(std::shared_ptr<PipelineCache> const& pipelineCache, vk::PipelineCreateFlags flags,
                                                                          vk::ArrayProxy<const PipelineShaderStageCreateInfo> stages,
                                                                          vk::Optional<const PipelineVertexInputStateCreateInfo> vertexInputState,
